@@ -531,41 +531,6 @@ func (this *Applier) RenameTablesRollback() (renameError error) {
 	return log.Errore(renameError)
 }
 
-// StopSlaveIOThread is applicable with --test-on-replica; it stops the IO thread, duh.
-// We need to keep the SQL thread active so as to complete processing received events,
-// and have them written to the binary log, so that we can then read them via streamer.
-func (this *Applier) StopSlaveIOThread() error {
-	query := `stop /* gh-ost */ slave io_thread`
-	log.Infof("Stopping replication")
-	if _, err := sqlutils.ExecNoPrepare(this.db, query); err != nil {
-		return err
-	}
-	log.Infof("Replication stopped")
-	return nil
-}
-
-// StartSlaveSQLThread is applicable with --test-on-replica
-func (this *Applier) StopSlaveSQLThread() error {
-	query := `stop /* gh-ost */ slave sql_thread`
-	log.Infof("Verifying SQL thread is stopped")
-	if _, err := sqlutils.ExecNoPrepare(this.db, query); err != nil {
-		return err
-	}
-	log.Infof("SQL thread stopped")
-	return nil
-}
-
-// StartSlaveSQLThread is applicable with --test-on-replica
-func (this *Applier) StartSlaveSQLThread() error {
-	query := `start /* gh-ost */ slave sql_thread`
-	log.Infof("Verifying SQL thread is running")
-	if _, err := sqlutils.ExecNoPrepare(this.db, query); err != nil {
-		return err
-	}
-	log.Infof("SQL thread started")
-	return nil
-}
-
 func (this *Applier) isReplicationStopped() bool {
 	query := `show slave status`
 	replicationStopped := false
